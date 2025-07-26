@@ -2,11 +2,11 @@
 
 A Java-based distributed file sharing system using **Remote Method Invocation (RMI)**. This project supports both **Command Line Interface (CLI)** and **Swing-based GUI** for client interaction.
 
----
 
-## 🧩 Features
 
-### ✅ User Authentication
+##  Features
+
+### ✅ User Login and Registration
 - Register and log in via CLI or GUI.
 - Credentials are stored in a file named `users.txt` using CSV format.
 - Only registered users can log in.
