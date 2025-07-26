@@ -35,17 +35,17 @@ Every user action is logged on the server with a timestamp for auditing and trac
 
 ```
 
-\[YYYY-MM-DD HH\:mm\:ss]username action
+[YYYY-MM-DD HH\:mm\:ss]username action
 
 ```
 
 **Examples:**
 ```
 
-\[2025-07-26 00:27:07]yoon uploaded eg.py
-\[2025-07-26 00:28:56]yoon downloaded new\.txt
-\[2025-07-26 10:41:47]mary downloaded lll.txt
-\[2025-07-26 10:48:52]sue downloaded mysql.txt
+[2025-07-26 00:27:07]yoon uploaded eg.py
+[2025-07-26 00:28:56]yoon downloaded new\.txt
+[2025-07-26 10:41:47]mary downloaded lll.txt
+[2025-07-26 10:48:52]sue downloaded mysql.txt
 
 ```
 ---
