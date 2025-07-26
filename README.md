@@ -1,4 +1,4 @@
-# 📁 Distributed File Sharing System using Java RMI
+# 📝 Distributed File Sharing System using Java RMI
 
 A Java-based distributed file sharing system using **Remote Method Invocation (RMI)**. This project supports both **Command Line Interface (CLI)** and **Swing-based GUI** for client interaction.
 
