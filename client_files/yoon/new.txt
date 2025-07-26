@@ -1,0 +1,374 @@
+
+def swap_timetable(request,classroom_id,semester_id):
+
+        print("\nClassroom id: ", classroom_id)
+
+        semester = Semester.objects.get(id=semester_id)
+
+
+        classrooms = []
+        course_instructor_list = []
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        slot = ["9:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "Break Time", "1:00 - 2:00", "2:00 - 3:00", "3:00 - 4:00"]
+        start_times = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"]
+
+
+
+        # Fetch classroom and its related major names
+        classroom = Classroom.objects.get(id=classroom_id)
+        room_info = {
+            'classroom': {
+                'id': classroom.id,
+                'room_number': classroom.room_number,
+                'majors': [major.name for major in classroom.majors.all()]
+            },
+            'schedule': []
+        }
+
+
+        # Get course-instructor mapping for this classroom
+        course_instructor = Timetable_Schedule.objects.filter(classroom=room_info['classroom']['id']) \
+            .values('course', 'instructor')
+
+        unique_courses = set()
+        for ci in course_instructor:
+            course_name = Course.objects.filter(id=ci['course']).values_list('name', flat=True).first() or ''
+            instructor_name = User.objects.filter(id=ci['instructor']).values_list('first_name', flat=True).first() or ''
+
+            course_tuple = (course_name, instructor_name)
+            if course_tuple not in unique_courses:
+                unique_courses.add(course_tuple)
+                course_instructor_list.append({
+                    'course_name': course_name,
+                    'instructor_name': instructor_name,
+                    'classroom': room_info['classroom']
+                })
+
+        # Build schedule day by day
+        for day in days:
+            day_course = {'day': day, 'courses': []}
+            courses = Timetable_Schedule.objects.filter(
+                classroom=classroom_id,
+                semester=semester,
+                day=day
+            ).values('course', 'instructor', 'start_time', 'lab_room').order_by('start_time')
+
+            for time in start_times:
+                time_obj = datetime.strptime(time, "%H:%M").time()
+                slot_courses = []
+
+                for course_data in courses:
+                    if time_obj == course_data['start_time']:
+                        # Add labroom name if labroom is not None
+                        lab_name = ''
+                        if course_data.get('lab_room'):
+                            lab = Classroom.objects.filter(id=course_data['lab_room']).first()
+                            if lab:
+                                lab_name = lab.room_number
+
+                        course_entry = {
+                            'id': [Course.objects.filter(id=course_data['course']).values_list('id', flat=True).first()] or '',
+                            'course_name': Course.objects.filter(id=course_data['course']).values_list('name',
+                                                                                                       flat=True).first() or '',
+                            'instructor': User.objects.filter(id=course_data['instructor']).values_list('first_name',
+                                                                                                        flat=True).first() or '',
+                            'start_time': str(course_data['start_time']),
+                            'lab_name': lab_name,  # ✅ Add lab name to display
+
+                        }
+
+                        slot_courses.append(course_entry)
+
+                # Handle multiple courses at same slot
+
+                if len(slot_courses) > 1:
+                    course_ids = [cid for course in slot_courses for cid in course['id']]
+                    print(course_ids)
+                    course_names = '/'.join([
+                        f"{course['course_name']} ({course['lab_name']})" if course.get('lab_name')
+                        else course['course_name']
+                        for course in slot_courses
+                    ])
+                    course_entry = {
+                        'id':course_ids,
+                        'course_name': course_names,
+                        'instructor': '',
+                        'start_time': str(time),
+                        'lab_name': '',  # Skip lab name if mixed
+                    }
+                elif slot_courses:
+                    course_entry = slot_courses[0]
+                else:
+                        course_entry = {
+                            'id': '',
+                            'course_name': ' ',
+                            'instructor': '',
+                            'instructor_id': '',
+                            'start_time': str(time),
+                            'lab_name': '',
+                        }
+
+                        course_entry['is_free'] = (
+                                course_entry['course_name'].strip() == '' and str(course_entry['start_time']) not in [
+                            '12:00:00'])
+
+                day_course['courses'].append(course_entry)
+
+            room_info['schedule'].append(day_course)
+
+        classrooms.append(room_info)
+        request.session['course_entry'] = classrooms
+        return render(request, 'swap_timetable.html', {
+            'classrooms': classrooms,
+            'start_times': slot,
+            'instructors': course_instructor_list,
+            'semester_id': semester_id,
+            'classroom_id':classroom_id
+        })
+
+
+def swap_options(request):
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    course_ids_raw = request.GET.get('course_ids')
+    course_ids = json.loads(course_ids_raw) if course_ids_raw else []
+
+    classroom_id = request.GET.get('classroom_id')
+    selected_day = request.GET.get('day')
+    selected_time = request.GET.get('time')
+    selected_classroom = Classroom.objects.get(id=classroom_id)
+
+    selected_slots = Timetable_Schedule.objects.filter(
+        course__id__in=course_ids,
+        day=selected_day,
+        start_time=selected_time,
+        classroom__id=classroom_id
+    )
+
+    print(selected_slots)
+
+    same_room_slots = Timetable_Schedule.objects.filter(classroom=selected_classroom).exclude(id__in=[s.id for s in selected_slots])
+
+    swappable_slots = []
+
+    for target in same_room_slots:
+        target_day = target.day
+        target_time = target.start_time
+        target_instructor = target.instructor
+        target_lab_room= target.lab_room
+        if target.course.type == 'supporting':
+            print("Supporing Check")
+            print(target_instructor)
+        for selected_slot in selected_slots:
+
+            instructor_busy_at_target = Timetable_Schedule.objects.filter(
+                instructor=selected_slot.instructor,
+                day=target_day,
+                start_time=target_time,
+
+            ).exists()
+
+            if target.course.type == 'supporting':
+                print("InstructorBusy",instructor_busy_at_target)
+
+            target_busy_at_selected = Timetable_Schedule.objects.filter(
+                instructor=target_instructor,
+                day=selected_slot.day,
+                start_time=selected_slot.start_time
+
+            ).exists()
+            if target.course.type == 'supporting':
+                print("TargerBusy",target_busy_at_selected)
+            if selected_slot.lab_room:
+
+                lab_busy_at_target = Timetable_Schedule.objects.filter(
+                    lab_room=selected_slot.lab_room,
+                    day=target_day,
+                    start_time=target_time
+                ).exists()
+
+
+                target_lab_busy_at_selected = Timetable_Schedule.objects.filter(
+                    lab_room=target_lab_room,
+                    day=selected_slot.day,
+                    start_time=selected_slot.start_time
+                ).exists()
+
+                if not instructor_busy_at_target and not target_lab_busy_at_selected and not lab_busy_at_target and not target_busy_at_selected:
+                    slot = {
+                        'course_id': target.course.id,
+                        'day': target_day,
+                        'time': target_time.strftime('%H:%M') if target.course.type in ['supporting', 'elective'] else str(target_time),
+                        'classroom_id': classroom_id
+                    }
+
+                    if target.course.type == 'supporting':
+                        slot['supporting_passed'] = True
+                        print("Supporting Passed")
+                        print(target.course.id)
+                        print(target_day)
+                        print(target_time)
+                        print(target.course.name)
+                        print(slot)
+                    swappable_slots.append(slot)
+
+            else:
+                if not instructor_busy_at_target and not target_busy_at_selected:
+                    slot = {
+                        'course_ids': target.course.id,
+                        'day': target_day,
+                        'time':target_time.strftime('%H:%M') if target.course.type in ['supporting', 'elective'] else str(target_time),
+                        'classroom_id': classroom_id
+                    }
+
+                    if target.course.type == 'supporting':
+                        slot['supporting_passed'] = True
+                        print("Supporting Passed")
+                        print(target.course.id)
+                        print(target_day)
+                        print(target_time)
+                        print(target.course.name)
+                        print(slot)
+                    swappable_slots.append(slot)
+    session_data = request.session.get('course_entry', {})
+    additional_swappables = []
+
+    free_slots = {}
+
+    for session in session_data:
+        for schedule in session.get("schedule", []):
+            day = schedule["day"]
+            free_times = [c["start_time"] for c in schedule["courses"] if c.get("is_free") and c["start_time"] != "12:00"]
+            free_slots[day] = free_times
+
+    for day in days:
+        for time in free_slots.get(day, []):
+            for selected_slot in selected_slots:
+                instructor_busy = Timetable_Schedule.objects.filter(
+                    instructor=selected_slot.instructor,
+                    day=day,
+                    start_time=time
+                ).exists()
+
+                if not instructor_busy:
+                    additional_swappables.append({
+                        'day': day,
+                        'time': str(time),
+                        'classroom_id': classroom_id,
+                        'is_free_slot': True,
+
+                    })
+
+                else:
+                    print(f"Instructor is busy on {day} at {time}")
+    swappable_slots.extend(additional_swappables)
+
+
+
+    day_time_to_courses = defaultdict(set)
+    for slot in swappable_slots:
+        if slot.get('supporting_passed'):
+            key = (slot['day'], slot['time'])
+            day_time_to_courses[key].add(slot['course_ids'])
+
+    # Step 2: Identify valid (day, time) keys that have 2 or more different course_ids
+    valid_day_time_keys = {key for key, courses in day_time_to_courses.items() if len(courses) >= 2}
+
+    # Step 3: Refilter swappable_slots
+    swappable_slots = [
+        slot for slot in swappable_slots
+        if not slot.get('supporting_passed') or (slot['day'], slot['time']) in valid_day_time_keys
+    ]
+
+    for swap in swappable_slots:
+        print(swap)
+
+    return JsonResponse({'swappable_slots': swappable_slots})
+
+
+
+def safe_parse_time(time_str):
+    if not time_str:
+        return None
+    if time_str.count(':') == 1:  # HH:MM format
+        return parse_time(time_str + ':00')
+    return parse_time(time_str)  # HH:MM:SS format
+
+@csrf_exempt
+def confirm_swap(request):
+    try:
+        data = json.loads(request.body)
+
+        first_selected_data = data['course1']
+        second_selected_data = data['course2']
+        first_course_ids_raw = first_selected_data['course_id']
+        first_course_ids = ast.literal_eval(first_course_ids_raw)
+
+        first_selected_courses = Timetable_Schedule.objects.filter(
+            course__id__in=first_course_ids,
+            day=first_selected_data['day'],
+            start_time=safe_parse_time(first_selected_data['time']),
+            classroom__id=first_selected_data['classroom_id']
+        )
+        print("FirstCourse", first_selected_courses)
+
+        first_day = first_selected_data['day']
+        first_time = safe_parse_time(first_selected_data['time'])
+
+        second_day = second_selected_data['day']
+        second_time = safe_parse_time(second_selected_data['time'])
+
+        if second_selected_data['course_id'] != '':
+            second_course_ids_raw = second_selected_data['course_id']
+            second_course_ids=ast.literal_eval(second_course_ids_raw)
+
+            second_selected_courses = Timetable_Schedule.objects.filter(
+                course__id__in=second_course_ids,
+                day=second_selected_data['day'],
+                start_time=safe_parse_time(second_selected_data['time']),
+                classroom__id=second_selected_data['classroom_id']
+            )
+
+            print("SecondCourse",second_selected_courses)
+
+            for course in first_selected_courses:
+                course.day = second_day
+                course.start_time = second_time
+                course.save()
+
+            for course in second_selected_courses:
+                course.day = first_day
+                course.start_time = first_time
+                course.save()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Course moved successfully'
+            })
+
+        else:
+            print("SecondCourse_id",second_selected_data['course_id'])
+            print("SecondCourse_id")
+
+            for course in first_selected_courses:
+                course.day = second_day
+                course.start_time = second_time
+                course.save()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Course moved successfully'
+            })
+
+    except Timetable_Schedule.DoesNotExist as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Course not found: {str(e)}'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Swap failed: {str(e)}'
+        }, status=500)
+
+

@@ -1,0 +1,61 @@
+insert into products values (1, 'Smartphone ', 'Apple ', ‘Electronics’ , 100),(2, 'Smartphone' , ‘Samsung’ ,’ Electronics’ ,150),(3, ‘ Camera’ , ‘Canon’ ,’Electronics’ ,50),(4, ‘TV’ , ‘Sony ‘ , ‘Electronics’ ,20),(5, ‘Printer’ ,’HP’ , ‘Electronics’ ,30),(6, ‘Laptop’ , ‘Dell’ , ‘Electronics’ ,80),(7, ‘Headphones ‘ ,’Sony’ , ‘Electronics’ 60),(8, ‘Earbuds’, ‘Apple’ , ‘Electronics’ ,100),(9, ‘TV’ , ‘LG’ , 'Electronics' , 40),(10, 'Camera' , 'Nikon' , 'Electronics',70);
+insert into Sales Data values(1,1,1,'2023-08-01',999.99),(2,2,2,'2023-08-02',899.99),(3,3,3,'2023-08-03',599.99),(4,4,4,'2023-08-04',1299.99),(5,5,5,'2023-08-05',299.99),(6,6,6,'2023-08-06',1499.99),(7,7,7,'2023-08-07',349.99),(8,8,8,'2023-08-08',199.99),(9,9,9,'2023-08-09',899.99),(10,10,10,'2023-08-10',1199.99);
+
+insert into Reorders values(1,3,20,'Pending'),(2,4,10,'Filled'),(3,8,15,'Pending'),(4,10,25,'Filled'),(5,2,30,'Pending'),(6,6,12,'Filled'),(7,5,8,'Pending'),(8,9,18,'Filled'),(9,1,5,'Pending'),(10,7,22,'Filled');
+
+Insert into shippers values (119997, ’Singapore Post ‘), (123456, ‘ USPS’), (149982, ‘Royal mail’),( 199975, ‘Canada Post’),(321654 , ‘TNT’),(349964, ‘Hermes’),(456789, ‘DHL’),(789123, ‘Fedx ‘),(899986, ‘Australia Post’),(987654, ‘UPS’);
+
+For inventory table
+Insert into inventory values (1,1,null,50),(2,1,null,40),(3,2,null,25),(4,null,1,15),(5,3,null,20),(6,2,null,30),(7,null,2,40),(8,4,null,50),(9,3,null,35),(10,null,3,60);
+Insert into inventory values(1,1,null,50),(2,1,null,40),(3,2,null,25),(4,null,1,15),(5,3,null,20),(6,2,null,30),(7,null,2,40),(8,4,null,50),(9,3,null,35),(10,null,3,60);  
+
+
+CREATE TABLE `vendor_pj`.`customer` (
+  `customerID` INT NOT NULL,
+  `customerName` VARCHAR(20) NOT NULL,
+  `accountNumber` INT NOT NULL,
+  `paymentMethod` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`customerID`));
+
+
+ create table customer(customerID int(8),customerName varchar(20),accountNumber int(8),paymentMethod varchar(20),constraint pk_customer primary key(customerID));
+
+ create table inventory(productID int(10),storeID int,warehouseID int,quantity_in_stock int,constraint pk_inventory primary key(productID));
+
+ create table orderItems(orderItemID int,orderID int,productID int,quantity int,unitPrice int,constraint pk_orderItems primary key(orderItemID));
+
+create table orders(orderID int,customerID int,orderDate varchar(15),totalAmount int,trackingNumber int,promised_delivery_date varchar(20),actual_delivery_date varchar(20),constraint pk_orders primary key(orderID),foreign key(customerID)references customer(customerID));
+
+create table products(productID int,productType varchar(20),manufactu
+rer varchar(20),category varchar(20),quantity_in_stock int,constraint pk_pro
+ducts primary key(productID));
+
+ create table reorders(reorderID int,productID int,quantity int,status varchar(20),constraint pk_reorders primary key(reorderID),foreign key(productID)references products(productID));
+
+create table salesData(saleID int,productID int,orderID int,saleDate varchar(15),saleAmount int,constraint pk_salesData primary key(saleID),foreign key(productID)references products(productID),foreign key(orderID)references orders(orderID));
+
+create table shipper(trackingNumber int,shipperName varchar(20),constraint pk_shipper primary key(trackingNumber));
+
+create table stores(storeID int,storeName varchar(15),region varchar(20),constraint pk_stores primary key(storeID));
+
+ create table wareHouse(warehouseID int,warehouseName varchar(20),constraint pk_wareHouse primary key(warehouseID));
+
+ alter table orderItems add foreign key(orderID)references orders(orderID);
+
+ alter table orderItems add foreign key(productID)references products(productID);
+
+ alter table inventory add foreign key(storeID)references stores(storeID);
+
+ alter table inventory add foreign key(warehouseID)references wareHouse(warehouseID);
+
+insert into wareHouse values (1,'Warehouse A'),(2,'Warehouse B'),(3,'Warehouse C'),(4,'Warehouse D'),(5,'Warehouse E'),(6,'Warehouse F'),(7,'Warehouse G'),(8,'Warehouse H'),(9,'Warehouse I'),(10,'Warehouse J');
+
+insert into salesData values (1,1,1,'2023-08-01',999.99),(2,2,2,'2023-08-02',899.99),(3,3,3,'2023-08-03',599.99),(4,4,4,'2023-08-04',1299.99),(5,5,5,'2023-08-05',299.99),(6,6,6,'2023-08-06',1499.99),(7,7,7,'2023-08-07',349.99),(8,8,8,'2023-08-08',199.99),(9,9,9,'2023-08-09',899.99),(10,10,10,'2023-08-10',1199.99);
+
+insert into orderItems values (1,1,1,2,499.99), (2,1,3,1,599.99), (3,2,2,2,899.99), (4,3,5,2,299.99), (5,4,4,1,1299.99),(6,4,8,1,199.99), (7,5,9,1,899.99), (8,6,6,1,1499.99), (9,6,10,1,1199.99), (10,7,7,1,349.99);
+
+π(productID, quantity)(σ(trackingNumber = '123456' ANDshipperName = 'USPS')((orders ⨝ orderItems) ⨝ shippers ))
+
+For orders table
+Insert into orders values (1,1,’2023-08-01’,100,123456,’2023-08-04’, ’2023-08-05’),(2,2,’2023-08-02’, 900, 987654,’2023-08-05’ , ‘2023-08-06’),(3,3,’2023-08-03’ , 600, 456789, ‘2023-08-06’, ‘2023-08-07’),(4,4, ‘2023-08-04’ , 1300, 789123,’2023-08-07’, ‘2023-08-08’),(5,5,’2023-08-05’, 300, 321654, ‘2023-08-07’, ‘2023-08-07’),(6,6,’2023-08-06’, 1500,149982 ,’2023-08-09’, ‘2023-08-09’),(7,7, ‘2023-08-07’, 350 ,349964,’2023-08-09’,’2023-08-08’),(8,8,’2023-08-08’, 200,199975, ‘2023-08-10’, ‘2023-08-09’),(9,9,’2023-08-09’, 900, 899986, ‘2023-08-11’, ‘2023-08-11’),(10,10,’2023-08-10’, 1200,119997, ‘2023-08-12’,’2023-08-12');
+
