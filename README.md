@@ -29,7 +29,7 @@ A Java-based distributed file sharing system using **Remote Method Invocation (R
 - Menu-driven with numeric choices
 - Text-based interaction for upload, list, and download
 
-## 📝 Server Logs with Timestamps
+### 📝 Server Logs with Timestamps
 
 Every user action is logged on the server with a timestamp for auditing and tracking purposes. Logs are stored in a plain text file and follow this format:
 
