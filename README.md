@@ -4,23 +4,6 @@ A Java-based distributed file sharing system using **Remote Method Invocation (R
 
 ---
 
-## 📌 Project Scenario
-
-This project simulates a simple distributed file server where:
-
-- Users can **register** and **log in**.
-- Once authenticated, they can:
-  - **Upload** files to the server.
-  - **Download** files they previously uploaded.
-  - **View a list** of their uploaded files.
-- All authentication is handled through a `users.txt` file (CSV format: `username,password`).
-- The server stores files under a folder named `server_files/username/`.
-- In the CLI version, downloaded files are saved under `client_files/username/`.
-- In the GUI version, users can choose a custom path to save downloaded files via a `JFileChooser`.
-- The GUI version also allows users to **log out** and return to the login screen.
-
----
-
 ## 🧩 Features
 
 ### ✅ User Authentication
@@ -46,6 +29,25 @@ This project simulates a simple distributed file server where:
 - Menu-driven with numeric choices
 - Text-based interaction for upload, list, and download
 
+## 📝 Server Logs with Timestamps
+
+Every user action is logged on the server with a timestamp for auditing and tracking purposes. Logs are stored in a plain text file and follow this format:
+
+```
+
+\[YYYY-MM-DD HH\:mm\:ss]username action
+
+```
+
+**Examples:**
+```
+
+\[2025-07-26 00:27:07]yoon uploaded eg.py
+\[2025-07-26 00:28:56]yoon downloaded new\.txt
+\[2025-07-26 10:41:47]mary downloaded lll.txt
+\[2025-07-26 10:48:52]sue downloaded mysql.txt
+
+```
 ---
 
 ## 🗂 Project Structure
@@ -54,21 +56,26 @@ This project simulates a simple distributed file server where:
 
 project-root/
 │
+├── Client/
+│   ├── FileClient.java            
+│   ├── FileClientGUI.java         # Swing GUI version of the client
+│   └── client_files/
+|           
 ├── common/
-│   └── FileService.java            # RMI Interface
+│   └── FileService.java            
 │
 ├── Server/
-│   ├── FileServer.java            # RMI Server
-│   ├── FileServiceImpl.java       # Implementation of RMI Interface
-│   └── users.txt                  # Stores registered users in CSV format
-│
-├── Client/
-│   ├── FileClient.java            # CLI version of the client
-│   ├── FileClientGUI.java         # Swing GUI version of the client
-│   └── client\_files/              # Stores downloaded files (for CLI)
-│
-└── server\_files/                  # Stores uploaded files per user
-
+│   ├── FileServer.java            
+│   └── FileServiceImpl.java
+|                        
+|── server_files/
+|    ├── username1/
+|        ├── file1.txt
+|        └── file2.png
+|    └── username2/
+|        └── file5.py
+└── server.log
+└── users.txt
 ````
 
 ---
@@ -103,34 +110,12 @@ java Client.FileClientGUI
 
 ---
 
-## 📷 Screenshots (optional)
+## 📃 License / Disclaimer
 
-> You can add screenshots of the GUI here to showcase the login screen, upload, download, and file listing.
+This project is created purely for educational purposes and personal learning.  
+It is part of my exploration into Java RMI while studying the **Distributed Systems** course.
 
----
+I built this project to deepen my understanding of how Java Remote Method Invocation works in real-world scenarios.  
+It reflects lessons learned during development and is not intended for commercial use.
 
-## 📌 Notes
-
-* Ensure that RMI Registry is running automatically with the program (via `LocateRegistry.createRegistry(...)` in server).
-* Make sure folders `server_files/` and `client_files/` exist or are created dynamically.
-* All file paths are handled by username to isolate user data.
-
----
-
-## 🧑‍💻 Author
-
-Yoon Thiri Aung
-📚 UCSY | 🎓 UoPeople Scholar | 💻 Backend & Java Developer
-
----
-
-## 📃 License
-
-This project is for educational purposes.
-
-```
-
----
-
-Let me know if you want a **badge-style title**, **screenshots section**, or if you're deploying this on GitHub Pages too!
-```
+Feel free to explore, modify, or extend this project for learning purposes!
