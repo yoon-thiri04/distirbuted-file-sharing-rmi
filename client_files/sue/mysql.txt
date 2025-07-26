@@ -1,1 +1,1 @@
-my sql pws=yoonthiri@2004
+my sql pws=
