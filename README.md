@@ -117,6 +117,6 @@ java Client.FileClientGUI
 This project is created purely for educational purposes and personal learning.  
 It is part of my exploration into Java RMI while studying the **Distributed Systems** course.
 
-I built this project to deepen my understanding of how Java Remote Method Invocation works in real-world scenarios.  \
+I built this project to deepen my understanding of how Java Remote Method Invocation works in real-world scenarios. 
 
 Feel free to explore, modify, or extend this project for learning purposes!
