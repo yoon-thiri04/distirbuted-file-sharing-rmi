@@ -6,17 +6,17 @@ A Java-based distributed file sharing system using **Remote Method Invocation (R
 
 ##  Features
 
-### ✅ User Login and Registration
+### 🧾 User Login and Registration
 - Register and log in via CLI or GUI.
 - Credentials are stored in a file named `users.txt` using CSV format.
 - Only registered users can log in.
 
-### ✅ File Operations
+### 🧾 File Operations
 - Upload a file to the server.
 - View a list of uploaded files.
 - Download files (with custom save path in GUI).
 
-### ✅ GUI Version (Swing)
+### 🧾 GUI Version (Swing)
 - Login / Register form
 - Buttons for:
   - Upload File
@@ -25,7 +25,7 @@ A Java-based distributed file sharing system using **Remote Method Invocation (R
   - Logout
 - JFileChooser used to select download destination
 
-### ✅ CLI Version
+### 🧾 CLI Version
 - Menu-driven with numeric choices
 - Text-based interaction for upload, list, and download
 
