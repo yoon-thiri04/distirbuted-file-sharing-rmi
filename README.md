@@ -44,7 +44,8 @@ Every user action is logged on the server with a timestamp for auditing and trac
 
 [2025-07-26 00:27:07]yoon uploaded eg.py
 [2025-07-26 00:28:56]yoon downloaded new\.txt
-[2025-07-26 10:41:47]mary downloaded lll.txt
+[2025-07-26 00:29:28]New user Registered - mary
+[2025-07-26 10:41:24]mary listed files
 [2025-07-26 10:48:52]sue downloaded mysql.txt
 
 ```
