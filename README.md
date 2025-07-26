@@ -58,8 +58,9 @@ project-root/
 │
 ├── Client/
 │   ├── FileClient.java            
-│   ├── FileClientGUI.java         # Swing GUI version of the client
-│   └── client_files/
+│   ├── FileClientGUI.java   # Swing GUI version of the client
+|      
+└── client_files/            # Client downloaded files store here(CLI)
 |           
 ├── common/
 │   └── FileService.java            
